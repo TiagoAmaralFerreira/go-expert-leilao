@@ -205,8 +205,4 @@ type Auction struct {
 3. Implemente as mudanças
 4. Adicione testes
 5. Faça commit das mudanças
-6. Abra um Pull Request
-
-## Licença
-
-Este projeto está sob a licença MIT. 
+6. Abra um Pull Request 
