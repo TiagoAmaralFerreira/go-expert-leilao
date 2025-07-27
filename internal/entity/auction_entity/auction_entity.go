@@ -2,9 +2,11 @@ package auction_entity
 
 import (
 	"context"
-	"fullcycle-auction_go/internal/internal_error"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/internal_error"
+
+	"github.com/google/uuid"
 )
 
 func CreateAuction(
@@ -75,4 +77,9 @@ type AuctionRepositoryInterface interface {
 
 	FindAuctionById(
 		ctx context.Context, id string) (*Auction, *internal_error.InternalError)
+
+	UpdateAuctionStatus(
+		ctx context.Context,
+		auctionId string,
+		status AuctionStatus) *internal_error.InternalError
 }

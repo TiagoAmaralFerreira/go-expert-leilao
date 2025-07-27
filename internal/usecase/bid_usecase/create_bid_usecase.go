@@ -2,9 +2,9 @@ package bid_usecase
 
 import (
 	"context"
-	"fullcycle-auction_go/configuration/logger"
-	"fullcycle-auction_go/internal/entity/bid_entity"
-	"fullcycle-auction_go/internal/internal_error"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/configuration/logger"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/entity/bid_entity"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/internal_error"
 	"os"
 	"strconv"
 	"time"

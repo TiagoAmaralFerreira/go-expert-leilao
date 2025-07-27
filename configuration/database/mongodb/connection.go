@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"fullcycle-auction_go/configuration/logger"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/configuration/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"

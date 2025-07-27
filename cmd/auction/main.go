@@ -2,20 +2,25 @@ package main
 
 import (
 	"context"
-	"fullcycle-auction_go/configuration/database/mongodb"
-	"fullcycle-auction_go/internal/infra/api/web/controller/auction_controller"
-	"fullcycle-auction_go/internal/infra/api/web/controller/bid_controller"
-	"fullcycle-auction_go/internal/infra/api/web/controller/user_controller"
-	"fullcycle-auction_go/internal/infra/database/auction"
-	"fullcycle-auction_go/internal/infra/database/bid"
-	"fullcycle-auction_go/internal/infra/database/user"
-	"fullcycle-auction_go/internal/usecase/auction_usecase"
-	"fullcycle-auction_go/internal/usecase/bid_usecase"
-	"fullcycle-auction_go/internal/usecase/user_usecase"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/configuration/database/mongodb"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/infra/api/web/controller/auction_controller"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/infra/api/web/controller/bid_controller"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/infra/api/web/controller/user_controller"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/infra/database/auction"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/infra/database/bid"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/infra/database/user"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/usecase/auction_usecase"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/usecase/bid_usecase"
+	"github.com/TiagoAmaralFerreira/go-expert-leilao/internal/usecase/user_usecase"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
 )
 
 func main() {
@@ -34,7 +39,7 @@ func main() {
 
 	router := gin.Default()
 
-	userController, bidController, auctionsController := initDependencies(databaseConnection)
+	userController, bidController, auctionsController, auctionRepository := initDependencies(databaseConnection)
 
 	router.GET("/auction", auctionsController.FindAuctions)
 	router.GET("/auction/:auctionId", auctionsController.FindAuctionById)
@@ -44,15 +49,31 @@ func main() {
 	router.GET("/bid/:auctionId", bidController.FindBidByAuctionId)
 	router.GET("/user/:userId", userController.FindUserById)
 
-	router.Run(":8080")
+	// Configuração para graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		router.Run(":8080")
+	}()
+
+	// Aguarda sinal de interrupção
+	<-sigChan
+	log.Println("Shutting down gracefully...")
+
+	// Para o repositório de leilões
+	auctionRepository.Stop()
+
+	log.Println("Server stopped")
 }
 
 func initDependencies(database *mongo.Database) (
 	userController *user_controller.UserController,
 	bidController *bid_controller.BidController,
-	auctionController *auction_controller.AuctionController) {
+	auctionController *auction_controller.AuctionController,
+	auctionRepository *auction.AuctionRepository) {
 
-	auctionRepository := auction.NewAuctionRepository(database)
+	auctionRepository = auction.NewAuctionRepository(database)
 	bidRepository := bid.NewBidRepository(database, auctionRepository)
 	userRepository := user.NewUserRepository(database)
 
